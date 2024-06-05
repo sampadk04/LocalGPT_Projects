@@ -1,0 +1,11 @@
+# Editors
+.vscode/
+
+# Mac/OSX
+.DS_Store
+
+__pycache__/
+
+# Project Specific
+SOURCE_DOCUMENTS/
+DB/
