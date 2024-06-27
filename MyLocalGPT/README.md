@@ -1,6 +1,6 @@
 # MyLocalGPT
 
-This is a mini-implementation of my own LocalGPT using Llama2.
+This is a mini-implementation of my own LocalGPT using Llama2. This is a project aimed at creating a localized version of GPT leveraging the capabilities of Llama2. This implementation allows users to ingest their own documents and query them using a powerful language model on their local device. The project includes scripts for setting up the environment, ingesting documents, and running the model, making it accessible for users to deploy and customize according to their needs.
 
 ## How to Use?
 - Clone the repo.
