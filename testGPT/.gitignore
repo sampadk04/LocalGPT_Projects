@@ -1,0 +1,9 @@
+# macos
+.DS_Store
+
+# venv
+.ollama_venv/
+
+# cache
+.chroma_cache/
+__pycache__/

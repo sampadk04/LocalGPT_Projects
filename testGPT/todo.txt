@@ -1,0 +1,4 @@
+- Contextualize the query (if chat history is on)
+- Add Search Capabilities (brave-search library)
+- Make Streamlit App
+- Make sure to chunk history (so as to not exceed context length)
