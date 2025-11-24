@@ -1,11 +1,57 @@
-# Editors
+# Python Cache Files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# IDEs and Editors
 .vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
 
 # Mac/OSX
 .DS_Store
+.AppleDouble
+.LSOverride
 
-__pycache__/
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
 
-# Project Specific
+# Project Specific - Data and Models
 SOURCE_DOCUMENTS/
 DB/
+models/
+*.bin
+*.ggml
+*.gguf
+*.safetensors
+
+# Logs and Temporary Files
+*.log
+*.tmp
+.cache/
+
+# Distribution / Packaging
+build/
+dist/
+*.egg-info/
+.eggs/

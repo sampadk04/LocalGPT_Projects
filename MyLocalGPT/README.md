@@ -1,86 +1,221 @@
 # MyLocalGPT
 
-This is a mini-implementation of my own LocalGPT using Llama2. This is a project aimed at creating a localized version of GPT leveraging the capabilities of Llama2. This implementation allows users to ingest their own documents and query them using a powerful language model on their local device. The project includes scripts for setting up the environment, ingesting documents, and running the model, making it accessible for users to deploy and customize according to their needs.
+A privacy-focused implementation of GPT leveraging Llama2 for local document querying. Query your own documents using language models running entirely on your local device.
 
-## How to Use?
-- Clone the repo.
-- Install the requirements.
-- Store the source documents in the `SOURCE_DOCUMENTS` folder.
-- Run the `ingest.py` file to ingest the source documents to store the embeddings in a vectorstore.
-- Run the `run_localGPT.py` file to run the LocalGPT on the local device.
-- Modify the `constants.py` file to change the device and model parameters of the LocalGPT.
+![MyLocalGPT](project-asset.png)
 
-## Run in Notebook
-- Run the `LocalGPT.ipynb` file to run the LocalGPT in Jupyter Notebook. Make sure to enable GPU in the notebook settings.
+## Features
+
+- **Complete Privacy**: All processing happens locally
+- **Multiple Document Formats**: PDF, TXT, and CSV support
+- **Flexible Model Selection**: Various Llama2 models based on hardware
+- **Conversation Memory**: Maintains context across queries
+- **Source Attribution**: Answers include document references
+- **Multi-Device Support**: CPU, CUDA, or MPS (Apple Silicon)
 
 ## Architecture
-![LocalGPT Architecture](LocalGPT_Architecture.jpeg)
+
+MyLocalGPT uses a RAG (Retrieval-Augmented Generation) pipeline:
+
+1. Documents are loaded and split into chunks
+2. Text chunks are converted to vector embeddings
+3. Embeddings are stored in ChromaDB
+4. User queries are matched against stored vectors
+5. Retrieved context is fed to Llama2 for answers
+6. Source documents are tracked and displayed
+
+## Prerequisites
+
+- Python 3.8+
+- 8GB RAM minimum (16GB+ recommended)
+- Optional GPU: NVIDIA (8GB+ VRAM) or Apple Silicon
+- 10GB+ disk space
+
+## Installation
+
+```bash
+# Clone repository
+git clone <repository-url>
+cd MyLocalGPT
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+Models download automatically on first run (~4GB for default Llama-2-7B).
+
+## Configuration
+
+Edit `constants.py` to configure:
+
+### Device Type
+```python
+DEVICE_TYPE = "mps"    # Apple Silicon
+# DEVICE_TYPE = "cuda"  # NVIDIA GPU
+# DEVICE_TYPE = "cpu"   # CPU only
+```
+
+### Model Selection
+```python
+# Default: Llama2 7B (4GB, good balance)
+MODEL_ID = "TheBloke/Llama-2-7B-Chat-GGML"
+MODEL_BASENAME = "llama-2-7b-chat.ggmlv3.q4_0.bin"
+```
+
+### Embedding Model
+```python
+# Default (recommended)
+EMBEDDING_MODEL_NAME = "hkunlp/instructor-large"  # 1.5GB VRAM
+
+# Alternatives:
+# "all-MiniLM-L6-v2"  # 0.2GB VRAM (faster, less accurate)
+# "intfloat/e5-base-v2"  # 0.5GB VRAM (good balance)
+```
+
+## Usage
+
+### 1. Add Documents
+```bash
+mkdir SOURCE_DOCUMENTS
+# Place your PDF, TXT, or CSV files here
+```
+
+### 2. Ingest Documents
+```bash
+python ingest.py
+```
+
+This processes documents and creates embeddings in the `DB` folder.
+
+### 3. Query Documents
+```bash
+python run_localGPT.py
+```
+
+Or use the enhanced version:
+```bash
+python run_localGPT2.py
+```
+
+**Difference**: `run_localGPT2.py` supports GGUF and GPTQ formats with more model loading options.
+
+### 4. Ask Questions
+```
+Enter a query: What is a Large Language Model?
+```
+
+Type `exit` to quit.
+
+## Supported Documents
+
+| Format | Notes |
+|--------|-------|
+| `.pdf` | Text extraction from PDFs |
+| `.txt` | UTF-8 encoded text files |
+| `.csv` | Comma-separated values |
+
+Extend support by modifying `load_single_document()` in `ingest.py` using [LangChain loaders](https://python.langchain.com/docs/modules/data_connection/document_loaders/).
+
+## Model Options
+
+### GGML/GGUF (CPU/MPS)
+```python
+# 7B - Recommended for most users
+MODEL_ID = "TheBloke/Llama-2-7B-Chat-GGML"
+MODEL_BASENAME = "llama-2-7b-chat.ggmlv3.q4_0.bin"
+
+# 13B - Better quality, more resources
+MODEL_ID = "TheBloke/Llama-2-13b-Chat-GGUF"
+MODEL_BASENAME = "llama-2-13b-chat.Q4_K_M.gguf"
+```
+
+### GPTQ (CUDA Only)
+```python
+# For 8-10GB VRAM GPUs
+MODEL_ID = "TheBloke/Wizard-Vicuna-7B-Uncensored-GPTQ"
+MODEL_BASENAME = "Wizard-Vicuna-7B-Uncensored-GPTQ-4bit-128g.no-act.order.safetensors"
+
+# For 24GB VRAM GPUs
+MODEL_ID = "TheBloke/Wizard-Vicuna-13B-Uncensored-GPTQ"
+MODEL_BASENAME = "Wizard-Vicuna-13B-Uncensored-GPTQ-4bit-128g.compat.no-act-order.safetensors"
+```
+
+See `constants.py` for more model options.
+
+## Troubleshooting
+
+**Out of Memory**
+- Use smaller model (7B instead of 13B)
+- Use smaller embedding model (`all-MiniLM-L6-v2`)
+- Reduce `max_tokens` and `n_ctx` in code
+
+**Model Download Issues**
+- Check internet connection
+- Verify model ID on HuggingFace
+- Models cache in `~/.cache/huggingface/`
+
+**Slow on CPU**
+- Use quantized GGML models (already default)
+- Reduce document chunk size
+- Use smaller embedding model
+
+**ChromaDB Errors**
+- Delete `DB` folder and re-run `python ingest.py`
 
 ## Sample Output
 
-This lists all the sources and the corresponding text chunks that are relevant to the query.
-
-```shell-session
+```
 > Question:
 What is a Large Language Model?
 
 > Answer:
- A large language model refers to a type of artificial intelligence (AI) model designed to process and generate human-like text, typically using deep learning techniques such as recurrent neural networks (RNNs), long short-term memory (LSTM) networks, or transformers. These models are trained on vast amounts of text data and can perform various tasks such as language translation, text summarization, and text generation. The term "large" refers to the model's size in terms of parameters (i.e., millions or billions of parameters), which affects its performance and capabilities.
+A large language model refers to a type of artificial intelligence (AI) model 
+designed to process and generate human-like text, typically using deep learning 
+techniques such as transformers. These models are trained on vast amounts of text 
+data and can perform tasks like translation, summarization, and text generation. 
+The term "large" refers to the model's size in parameters (millions or billions), 
+which affects its performance and capabilities.
+
 ----------------------------------SOURCE DOCUMENTS---------------------------
-
-> /Users/sampadk04/Desktop/Coding/Active_Projects/MyLocalGPT/SOURCE_DOCUMENTS/GPT-3-Language Models are Few-Shot Learners.pdf:
-8 Conclusion
-
-We presented a 175 billion parameter language model which shows strong performance on many NLP tasks and
-benchmarks in the zero-shot, one-shot, and few-shot settings, in some cases nearly matching the performance of
-
-40
-
-
-state-of-the-art ﬁne-tuned systems, as well as generating high-quality samples and strong qualitative performance at
-tasks deﬁned on-the-ﬂy. We documented roughly predictable trends of scaling in performance without using ﬁne-tuning.
-We also discussed the social impacts of this class of model. Despite many limitations and weaknesses, these results
-suggest that very large language models may be an important ingredient in the development of adaptable, general
-language systems.
-
-Acknowledgements
-
-> /Users/sampadk04/Desktop/Coding/Active_Projects/MyLocalGPT/SOURCE_DOCUMENTS/GPT-3-Language Models are Few-Shot Learners.pdf:
-Several lines of work have focused on increasing parameter count and/or computation in language models as a
-means to improve generative or task performance. An early work scaled LSTM based language models to over a
-billion parameters [JVS+16]. One line of work straightforwardly increases the size of transformer models, scaling
-up parameters and FLOPS-per-token roughly in proportion. Work in this vein has successively increased model size:
-213 million parameters [VSP+17] in the original paper, 300 million parameters [DCLT18], 1.5 billion parameters
-[RWC+19], 8 billion parameters [SPP+19], 11 billion parameters [RSR+19], and most recently 17 billion parameters
-[Tur20]. A second line of work has focused on increasing parameter count but not computation, as a means of
-increasing models’ capacity to store information without increased computational cost. These approaches rely on the
-conditional computation framework [BLC13] and speciﬁcally, the mixture-of-experts method [SMM+17] has been
-
-> /Users/sampadk04/Desktop/Coding/Active_Projects/MyLocalGPT/SOURCE_DOCUMENTS/GPT-3-Language Models are Few-Shot Learners.pdf:
-Another line of work goes in the opposite direction from scaling, attempting to preserve strong performance in language
-models that are as small as possible. This approach includes ALBERT [LCG+19] as well as general [HVD15] and
-
-39
-
-
-task-speciﬁc [SDCW19, JYS+19, KR16] approaches to distillation of language models. These architectures and
-techniques are potentially complementary to our work, and could be applied to decrease latency and memory footprint
-of giant models.
-
-As ﬁne-tuned language models have neared human performance on many standard benchmark tasks, considerable
-effort has been devoted to constructing more difﬁcult or open-ended tasks, including question answering [KPR+19,
-IBGC+14, CCE+18, MCKS18], reading comprehension [CHI+18, RCM19], and adversarially constructed datasets
-designed to be difﬁcult for existing language models [SBBC19, NWD+19]. In this work we test our models on many
-of these datasets.
-
-> /Users/sampadk04/Desktop/Coding/Active_Projects/MyLocalGPT/SOURCE_DOCUMENTS/GPT-3-Language Models are Few-Shot Learners.pdf:
-Another recent trend in language modeling may offer a way forward. In recent years the capacity of transformer
-language models has increased substantially, from 100 million parameters [RNSS18], to 300 million parameters
-[DCLT18], to 1.5 billion parameters [RWC+19], to 8 billion parameters [SPP+19], 11 billion parameters [RSR+19],
-and ﬁnally 17 billion parameters [Tur20]. Each increase has brought improvements in text synthesis and/or downstream
-NLP tasks, and there is evidence suggesting that log loss, which correlates well with many downstream tasks, follows a
-smooth trend of improvement with scale [KMH+20]. Since in-context learning involves absorbing many skills and
-tasks within the parameters of the model, it is plausible that in-context learning abilities might show similarly strong
-gains with scale.
+> /Users/.../SOURCE_DOCUMENTS/GPT-3-Language Models are Few-Shot Learners.pdf:
+We presented a 175 billion parameter language model which shows strong 
+performance on many NLP tasks and benchmarks...
 ----------------------------------SOURCE DOCUMENTS---------------------------
 ```
+
+## Project Structure
+
+```
+MyLocalGPT/
+├── constants.py           # Configuration
+├── ingest.py             # Document processing
+├── run_localGPT.py       # Simple query interface
+├── run_localGPT2.py      # Enhanced query interface
+├── requirements.txt      # Dependencies
+├── SOURCE_DOCUMENTS/     # Your documents (gitignored)
+└── DB/                   # Vector database (gitignored)
+```
+
+## Contributing
+
+Contributions welcome! Please:
+- Report bugs via issues
+- Submit PRs for improvements
+- Share feedback and use cases
+
+## License
+
+MIT License
+
+## Author
+
+**Sampad Kar**
+- GitHub: [@sampadk04](https://github.com/sampadk04)
+
+---
+
+Built with [LangChain](https://www.langchain.com/), [Llama2](https://ai.meta.com/llama/), and [ChromaDB](https://www.trychroma.com/)

@@ -18,6 +18,7 @@ from constants import PROMPT_TEMPLATE, CONTEXT_QUERY_TEMPLATE
 def get_embedding_function():
     # embeddings = OllamaEmbeddings(model="nomic-embed-text")
     embeddings = OllamaEmbeddings(model="gemma2:2b")
+    # embeddings = OllamaEmbeddings(model="llama3.2:1b")
     return embeddings
 
 # load the documents
@@ -122,6 +123,8 @@ def query_rag(query_text: str):
     # print(prompt)
 
     model = Ollama(model="gemma2:2b")
+    # model = Ollama(model="llama3.2:1b")
+
     response_text = model.invoke(prompt)
 
     # formatted_response_text = f"RESPONSE:\n\n {response_text}\n\nSOURCES: {sources}"
@@ -158,6 +161,8 @@ def retrieval_qa_pipeline(use_history=False):
             # print(context_query_prompt)
 
             model = Ollama(model="gemma2:2b")
+            # model = Ollama(model="llama3.2:1b")
+
             context_query = model.invoke(context_query_prompt)
 
             model_response, sources = query_rag(context_query)
